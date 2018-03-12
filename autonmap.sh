@@ -1,32 +1,25 @@
 #!/bin/bash
 
 DATE=`date +%F`
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-## Begin Config
+test -e /etc/autonmap.conf && . /etc/autonmap.conf || \
+  test -e /usr/local/etc/autonmap.conf && . /usr/local/etc/autonmap.conf || \
+    test -e "$DIR/"autonmap.conf && . "$DIR/"autonmap.conf || \
+      test -e ./autonmap.conf && . ./autonmap.conf || {
+        echo Error: can not find config file autonmap.conf, place it in /etc/
+        exit 1
+      }
 
-# The directory for autonmap data/scans
-RUN_DIRECTORY="/usr/local/autonmap/"
+test -n "$RUN_DIRECTORY" -a -n "$WEB_DIRECTORY" || {
+  echo Error: no configuration data loaded
+  exit 1
+}
 
-# The directory you want the web report to live in
-WEB_DIRECTORY="/var/www/autonmap/"
 
-# The subnets you want to scan daily, space seperated. 
-SCAN_SUBNETS="10.101.0.0/24"
-
-# The full path (http) to where the report will be hosted by your webserver. This is included in the email report.
-# I suggest setting up auth using htpasswd etc, in which case you can include the auth in the URL for simplicity if you want. 
-WEB_URL="http://mywebserver.com/autonmap/scan-$DATE.xml"
-
-# The full path to your chosen nmap binary
-NMAP="/usr/bin/nmap"
-
-# The path to the ndiff tool provided with nmap
-NDIFF="/usr/bin/ndiff"
-
-# The email address(es), space seperated that you wish to send the email report to. 
-EMAIL_RECIPIENTS="you@yourdomain.com youteam@yourdomain.com"
-
-## End config
+# be sure the paths are there
+mkdir -p /usr/local/autonmap/
+mkdir -p /var/www/autonmap/
 
 echo "`date` - Welcome to AutoNmap2. "
 
@@ -50,7 +43,7 @@ then
             echo "`date` - Differences Detected. Sending mail."
             echo -e "AutoNmap2 found differences in a scan for '${SCAN_SUBNETS}' since yesterday. \n\n$DIFF\n\nFull report available at $WEB_URL" | mail -s "AutoNmap2" $EMAIL_RECIPIENTS
     else
-            echo "`date`- No differences, skipping mail. "
+            echo "`date` - No differences, skipping mail. "
     fi
 
 else 

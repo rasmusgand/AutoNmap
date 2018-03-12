@@ -3,13 +3,16 @@
 DATE=`date +%F`
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-test -e /etc/autonmap.conf && . /etc/autonmap.conf || \
-  test -e /usr/local/etc/autonmap.conf && . /usr/local/etc/autonmap.conf || \
-    test -e "$DIR/"autonmap.conf && . "$DIR/"autonmap.conf || \
+test -e /etc/autonmap.conf && . /etc/autonmap.conf || {
+  test -e /usr/local/etc/autonmap.conf && . /usr/local/etc/autonmap.conf || {
+    test -e "$DIR/"autonmap.conf && . "$DIR/"autonmap.conf || {
       test -e ./autonmap.conf && . ./autonmap.conf || {
         echo Error: can not find config file autonmap.conf, place it in /etc/
         exit 1
       }
+    }
+  }
+}
 
 test -n "$RUN_DIRECTORY" -a -n "$WEB_DIRECTORY" || {
   echo Error: no configuration data loaded
